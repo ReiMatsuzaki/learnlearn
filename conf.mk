@@ -2,8 +2,8 @@ LEARNLEARN_ROOT=${HOME}/src/learnlearn
 PROJ_ROOT=${LEARNLEARN_ROOT}
 
 # -- basic --
-CXX=gpp
-CF=
+CXX=clang++
+CF=-std=c++11
 
 # -- Directories --
 SRC=${PROJ_ROOT}/src
@@ -19,10 +19,13 @@ clean_all:
 check_%: ${BUILD}/utest_%
 	$<
 
+# -- utils --
+od2obj = $(addprefix ${BUILD}/, $(addsuffix .o, $(1)))
+
 # -- compile --
-%.x:
+${BUILD}/%.x:
 	${CXX} ${CF} $^ -o $@
 ${BUILD}/%.o: ${SRC}/%.cpp
-	@if [ ! -d ${BUILD} ]; \
+	cd ${BUILD}; ${CXX} ${CF} -c $< -o $@
 
 
