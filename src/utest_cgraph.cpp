@@ -1,7 +1,8 @@
 #include <iostream>
-#include "operation.hpp"
+#include "cgraph.hpp"
 #include <Eigen>
 using namespace std;
+using namespace Eigen;
 using namespace learnlearn;
 
 int main () {
@@ -10,22 +11,27 @@ int main () {
   cout << "output:" << endl;
   cout << a << endl;
   auto x = new Placeholder("x");
-  auto y = new Variable0(2.0);
+  VectorXd yy(1); yy << 2.0;
+
+  auto y = new VarVector(yy);
+  cout << "XX" << endl;
+  cout << y->to_string() << endl;
   auto z = new Add(x, y);
-  auto w = new Mul(x, z);
+
+  //  auto w = new Mul(x, z);
 
   // w = (x+y) * x
 
   Replace rep;
-  rep[x] = 3.0;
+  rep[x] = VectorXd::Zero(1);
+  rep[x][0] = 2.0;
+  //  x->run(rep);
   
-  cout << *w << endl;
-  cout << z->run(rep) << endl;
-  cout << w->run(rep) << endl;
-
-  /*
-  std::shared_ptr<Placeholder> x(new Placeholder("x"));
-  std::shared_ptr<Placeholder> y(new Placeholder("y"));
-  std::shared_ptr<Add> x_plus_y(new Add(x, y));
-  */
+  z->run(rep);
+  //  cout << "cout<<*z" << endl;
+  //  cout << *z << endl;
+  cout << "z->output" << endl;
+  cout << z->output_ << endl;
+  //  cout << w->run(rep) << endl;
+  
 }

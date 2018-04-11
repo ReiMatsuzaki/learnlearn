@@ -1,8 +1,10 @@
-#include "operation.hpp"
+#include "cgraph.hpp"
 #include <iostream>
 
 namespace learnlearn {
   using namespace std;
+  using namespace Eigen;
+  
   std::ostream& operator<<(std::ostream& stream, const Graph& value) {
     stream << "Graph" << endl;
     stream << "Operators:" << endl;
@@ -21,28 +23,40 @@ namespace learnlearn {
   }
 
   string Node::to_string() const { return "Node"; }
-  double Node::run(const Replace& rep0) { return 0.0; }
+  void Node::run(const Replace& rep0) { }
+    
+  const VectorXd& IVector::getvec() const { return x; }
+  void IVector::run(const Replace& rep) {}
   
   Placeholder::Placeholder(std::string name) {
     name_ = name;
     Graph::get_instance().placeholders_.push_back(this);
   }
-  double Placeholder::run(const Replace& rep) {
+  const VectorXd& Placeholder::getvec() const { return this->output_; }
+  void Placeholder::run(const Replace& rep) {
     auto it = rep.find(this);
     this->output_ = it->second;
-    return this->output_;
+    cout << "Placeholder::run  " << this->output_ << endl;
   }
+  
   string Placeholder::to_string() const {
     return "Placeholder(" + name_ + ")";
   }
 
-  Variable0::Variable0(double value) { output_=value; }
-  double Variable0::run(const Replace& rep) { return output_; }
-  string Variable::to_string() const {
-    return "Variable";
+  string Variable::to_string() const { return "Variable"; }
+  VarScalar::VarScalar(double value) { val_scalar_ = value; }
+  string VarScalar::to_string() const { return "Scalar"; }
+  VarVector::VarVector(const Eigen::VectorXd& value) { vec_value_=value; }
+  const VectorXd& VarVector::getvec() const { return vec_value_; }
+  string VarVector::to_string() const {
+    auto buf = "VarVector";
+    cout << vec_value_ << endl;
+    return buf;
   }
-  string Variable0::to_string() const {
-    return "Variable0(" + std::to_string(output_) + ")";
+  VarMatrix::VarMatrix(const Eigen::MatrixXd& value) { mat_value_=value; }
+  string VarMatrix::to_string() const {
+    return "Matrix";
+    //return "Variable0(" + std::to_string(output_) + ")";
   }
   
   Operation::Operation() {
@@ -59,20 +73,26 @@ namespace learnlearn {
       (*it)->consumers_.push_back(this);
     }
   }
-  double Operation::run(const Replace& rep) { return 0.0; }
-  Add::Add(Node* a, Node* b) : Operation() {
+  void Operation::run(const Replace& rep) {}
+  Add::Add(IVector *a, IVector *b) : Operation(), a_(a), b_(b) {
+    /*
     std::list<Node*> input_nodes;
     input_nodes.push_back(a);
     input_nodes.push_back(b);
     this->init(input_nodes);
+    */
   }
-  double Add::run(const Replace& rep) {
-    double acc = 0;
-    for(auto it = input_nodes_.begin(); it != input_nodes_.end(); ++it) {
-      acc += (*it)->run(rep);      
-    }
-    this->output_ = acc;
-    return acc;
+  const VectorXd& Add::getvec() const { return output_; }
+  void Add::run(const Replace& rep) {
+    //    for(auto it = input_nodes_.begin(); it != input_nodes_.end(); ++it) {
+    //      (*it)->run(rep);
+    //    }
+    a_->run(rep);
+    b_->run(rep);
+    cout << "Add:run >>" << endl;
+    cout << this->a_->getvec() << endl;
+    cout << this->b_->getvec() << endl;
+    this->output_ = this->a_->getvec() + this->b_->getvec();
   }
   string Add::to_string() const {
     auto it = input_nodes_.begin();
@@ -81,19 +101,19 @@ namespace learnlearn {
     buf += (*it)->to_string() + ")";
     return buf;
   }
+  /*
   Mul::Mul(Node* a, Node* b) : Operation() {
     std::list<Node*> input_nodes;
     input_nodes.push_back(a);
     input_nodes.push_back(b);
     this->init(input_nodes);
   }
-  double Mul::run(const Replace& rep) {
-    double acc = 1;
+  void Mul::run(const Replace& rep) {
+    Eigen::VectorXd acc = 1;
     for(auto it = input_nodes_.begin(); it != input_nodes_.end(); ++it) {
       acc *= (*it)->run(rep);      
     }
     this->output_ = acc;
-    return acc;
   }
   string Mul::to_string() const {
     auto it = input_nodes_.begin();
@@ -102,7 +122,7 @@ namespace learnlearn {
     buf += (*it)->to_string() + ")";
     return buf;
   }
-
+  */
 
   /*
   Node::Node() {}
