@@ -7,31 +7,21 @@ using namespace learnlearn;
 
 int main () {
 
-  int a = 10;
-  cout << "output:" << endl;
-  cout << a << endl;
   auto x = new Placeholder("x");
   VectorXd yy(1); yy << 2.0;
-
   auto y = new VarVector(yy);
-  cout << "XX" << endl;
-  cout << y->to_string() << endl;
   auto z = new Add(x, y);
-
-  //  auto w = new Mul(x, z);
-
+  MatrixXd mm(1,1); mm << 4.0;
+  auto m = new VarMatrix(mm);
+  auto w = new Mul(m, z);
   // w = (x+y) * x
 
   Replace rep;
-  rep[x] = VectorXd::Zero(1);
-  rep[x][0] = 2.0;
-  //  x->run(rep);
+  VectorXd x0(1); x0<<3.0;
+  rep[x] = x0;
   
-  z->run(rep);
-  //  cout << "cout<<*z" << endl;
-  //  cout << *z << endl;
-  cout << "z->output" << endl;
-  cout << z->output_ << endl;
+  w->run(rep);
+  cout << "w->output: " << w->getvec() << endl;
   //  cout << w->run(rep) << endl;
   
 }

@@ -32,34 +32,28 @@ namespace learnlearn {
   class Node {
   public:
     std::list<Node*> consumers_;
-    Eigen::VectorXd output_;
-    virtual std::string to_string() const;
+    virtual std::string to_string() const = 0;
     virtual void run(const Replace& rep);
   public:    
   };
 
-  class IVector {
-    Eigen::VectorXd x;
+  class VectorNode : public Node {
+  protected:
+    Eigen::VectorXd value_;
   public:
-    virtual const Eigen::VectorXd& getvec() const;
-    virtual void run(const Replace& rep);
+    const Eigen::VectorXd& getvec() const;
   };
   
-  class Placeholder : public Node, public IVector {
+  class Placeholder : public VectorNode {
   private:
     std::string name_;    
   public:    
     Placeholder(std::string name);
-    virtual const Eigen::VectorXd& getvec() const;
     virtual void run(const Replace& rep);
     virtual std::string to_string() const;
   };
 
-  class Variable : public Node {
-  public:
-    virtual std::string to_string() const;
-  };
-  class VarScalar : public Variable {
+  class VarScalar : public Node {
   private:
     double val_scalar_;
   public:
@@ -67,39 +61,56 @@ namespace learnlearn {
     //    virtual const Eigen::VectorXd& run(const Replace& rep);
     virtual std::string to_string() const;
   };
-  class VarVector : public Variable, public IVector {
+  class VarVector : public VectorNode {
   public:
-    Eigen::VectorXd vec_value_;
     VarVector(const Eigen::VectorXd& value);
-    const Eigen::VectorXd& getvec() const;
     virtual std::string to_string() const;
   };
-  class VarMatrix : public Variable {
+  class VarMatrix : public Node {
   public:
     Eigen::MatrixXd mat_value_;
     VarMatrix(const Eigen::MatrixXd& value);
     virtual std::string to_string() const;
   };
-  
-  class Operation : public Node {
+
+  class Operation : public VectorNode {
   protected:
     std::list<Node*> input_nodes_;    
   public:
     Operation();
+    Operation(Node *a);
+    Operation(Node *a, Node *b);
     Operation(const std::list<Node*>& input_nodes);
     void init(const std::list<Node*>& input_nodes);
-    virtual void run(const Replace& rep);
-    virtual std::string to_string() const = 0;
   };
-  class Add : public Operation, IVector {
+  class Add : public Operation {
   private:
-    IVector *a_, *b_;
+    VectorNode *a_, *b_;
   public:
-    Add(IVector *a, IVector *b);
-    virtual void run(const Replace& rep);
-    const Eigen::VectorXd& getvec() const;
-    virtual std::string to_string() const;
+    Add(VectorNode *a, VectorNode *b);
+    void run(const Replace& rep);    
+    std::string to_string() const;
   };
+  class Mul : public Operation {
+  private:
+    VarMatrix *m_;
+    VectorNode *a_;
+  public:
+    Mul(VarMatrix *m, VectorNode *a);
+    void run(const Replace& rep);    
+    std::string to_string() const;
+  };
+
+  class Tanh : public Operation {
+  private:
+    VectorNode *a_;
+  public:
+    Tanh(VectorNode *a);
+    void run(const Replace& rep);    
+    std::string to_string() const;
+  };
+  
+  std::ostream& operator<<(std::ostream& stream, const Node& vallue);
   /*
   class Mul : public Operation {
   public:
@@ -107,10 +118,11 @@ namespace learnlearn {
     virtual void run(const Replace& rep);
     virtual std::string to_string() const;
   };
+  
   */
-  std::ostream& operator<<(std::ostream& stream, const Graph& vallue);
-  std::ostream& operator<<(std::ostream& stream, const Operation& value);
-  std::ostream& operator<<(std::ostream& stream, const Add& vallue);
+  //  std::ostream& operator<<(std::ostream& stream, const Graph& vallue);
+  //  std::ostream& operator<<(std::ostream& stream, const Operation& value);
+  //  std::ostream& operator<<(std::ostream& stream, const Add& vallue);
   /*
   class Node;
   typedef std::list< std::shared_ptr<Node> > pNodes;
