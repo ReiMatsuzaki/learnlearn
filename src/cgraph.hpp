@@ -3,13 +3,17 @@
 
 #include <string>
 #include <list>
+#include <map>
 #include <memory>
 
 namespace learnlearn {
-  
+
+  class Node;
   class Operation;
   class Variable;
-  class Placeholder;    
+  class Placeholder;
+
+  typedef std::map<Node*,double> Replace;
 
   class Graph {
   public:
@@ -27,23 +31,10 @@ namespace learnlearn {
   class Node {
   public:
     std::list<Node*> consumers_;
+    double output_;
     virtual std::string to_string() const;
+    virtual double run(const Replace& rep);
   public:    
-  };  
-
-  class Operation : public Node {
-  protected:
-    std::list<Node*> input_nodes_;    
-  public:
-    Operation();
-    Operation(const std::list<Node*>& input_nodes);
-    void init(const std::list<Node*>& input_nodes);
-    virtual std::string to_string() const = 0;
-  };
-  class Add : public Operation {
-  public:
-    Add(Node* a, Node* b);
-    virtual std::string to_string() const;
   };
 
   class Placeholder : public Node {
@@ -51,22 +42,45 @@ namespace learnlearn {
     std::string name_;    
   public:
     Placeholder(std::string name);
+    virtual double run(const Replace& rep);
     virtual std::string to_string() const;
   };
-  
+
   class Variable : public Node {
   public:
     virtual std::string to_string() const;
   };
   class Variable0 : public Variable {
   private:
-    double value_;
   public:
-    Variable0(double value) : value_(value) {}
+    Variable0(double value);
+    virtual double run(const Replace& rep);
     virtual std::string to_string() const;
   };
-
-
+  
+  class Operation : public Node {
+  protected:
+    std::list<Node*> input_nodes_;    
+  public:
+    Operation();
+    Operation(const std::list<Node*>& input_nodes);
+    void init(const std::list<Node*>& input_nodes);
+    virtual double run(const Replace& rep);
+    virtual std::string to_string() const = 0;
+  };
+  class Add : public Operation {
+  public:
+    Add(Node* a, Node* b);
+    virtual double run(const Replace& rep);
+    virtual std::string to_string() const;
+  };
+  class Mul : public Operation {
+  public:
+    Mul(Node* a, Node* b);
+    virtual double run(const Replace& rep);
+    virtual std::string to_string() const;
+  };
+  
   std::ostream& operator<<(std::ostream& stream, const Graph& vallue);
   std::ostream& operator<<(std::ostream& stream, const Operation& value);
   std::ostream& operator<<(std::ostream& stream, const Add& vallue);

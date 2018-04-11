@@ -1,9 +1,11 @@
 LEARNLEARN_ROOT=${HOME}/src/learnlearn
 PROJ_ROOT=${LEARNLEARN_ROOT}
 
+include ${PROJ_ROOT}/local.mk
+
 # -- basic --
 CXX=clang++
-CF=-std=c++11
+CF=-std=c++11 -I${EIGENDIR}
 
 # -- Directories --
 SRC=${PROJ_ROOT}/src
