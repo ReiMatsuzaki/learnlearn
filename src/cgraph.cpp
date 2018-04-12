@@ -89,13 +89,11 @@ namespace learnlearn {
       this->value_[i] = tanh(x[i]);
     }
   }
-  string Tanh::to_string() const { return "Tanh"; }
   void Sigmoid::run(const Replace& rep) {
     a_->run(rep);
     const VectorXd& x(a_->getvec());
     value_ = 1 / (1 + (-x).array().exp());
   }
-  string Sigmoid::to_string() const { return "Sigmoid"; }
   void Softmax::run(const Replace& rep) {
     a_->run(rep);
     const VectorXd& x(a_->getvec());
@@ -103,5 +101,18 @@ namespace learnlearn {
     double sum = value_.sum();
     value_ /= sum;
   }
-  string Softmax::to_string() const { return "Softmax"; }
+  void Log::run(const Replace& rep) {
+    a_->run(rep);
+    const VectorXd& x(a_->getvec());
+    value_ = x.array().log();
+  }
+  void Multiply::run(const Replace& rep) {
+    a_->run(rep);
+    b_->run(rep);
+    value_ = a_->getvec().array() * b_->getvec().array();
+  }
+  void Negative::run(const Replace& rep) {
+    a_->run(rep);
+    value_ = -a_->getvec();
+  }
 }

@@ -36,10 +36,33 @@ namespace learnlearn {
     virtual void run(const Replace& rep);
   public:    
   };
+  
+  template<int N> class TNode : public Node {
+    TNode() {}
+  };
+  template<> class TNode<0> {
+  private:
+    double value_;
+  public:
+    double value() const { return value_; }
+  };    
+  template<> class TNode<1> {
+  private:
+    Eigen::VectorXd value_;
+  public:
+    const Eigen::VectorXd& value() const { return value_; }
+  };
+  template<> class TNode<2> {
+  private:
+    Eigen::MatrixXd value_;
+  public:
+    const Eigen::MatrixXd& value() const { return value_; }
+  };
 
   class VectorNode : public Node {
   protected:    
-    Eigen::VectorXd value_; // vector expressing a data.
+    Eigen::VectorXd value_; // value_[]
+    VectorNode() {}
     VectorNode(int n) : value_(n) {}
   public:
     const Eigen::VectorXd& getvec() const;
@@ -112,7 +135,7 @@ namespace learnlearn {
   public:
     Tanh(VectorNode *a) : a_(a), Operation(a) {}
     void run(const Replace& rep);    
-    std::string to_string() const;
+    std::string to_string() const  { return "Tanh"; }
   };
   class Sigmoid : public Operation {
   private:
@@ -120,7 +143,7 @@ namespace learnlearn {
   public:
     Sigmoid(VectorNode *a) : a_(a), Operation(a) {}
     void run(const Replace& rep);
-    std::string to_string() const;
+    std::string to_string() const { return "Sigmoid"; }
   };
   class Softmax : public Operation {
   private:
@@ -128,7 +151,31 @@ namespace learnlearn {
   public:
     Softmax(VectorNode *a) : a_(a), Operation(a) {}
     void run(const Replace& rep);
-    std::string to_string() const;
+    std::string to_string() const  { return "Softmax"; }
+  };
+  class Log : public Operation {
+  private:
+    VectorNode *a_;
+  public:
+    Log(VectorNode *a) : a_(a), Operation(a) {}
+    void run(const Replace& rep);
+    std::string to_string() const  { return "Log"; }
+  };
+  class Multiply : public Operation {
+  private:
+    VectorNode *a_, *b_;
+  public:
+    Multiply(VectorNode *a, VectorNode *b) : a_(a), b_(b), Operation(a,b) {}
+    void run(const Replace& rep);
+    std::string to_string() const  { return "Multiply"; }
+  };
+  class Negative : public Operation {
+    private:
+    VectorNode *a_;
+  public:
+    Negative(VectorNode *a) : a_(a), Operation(a) {}
+    void run(const Replace& rep);
+    std::string to_string() const { return "Negative"; }
   };
   
   std::ostream& operator<<(std::ostream& stream, const Node& vallue);
