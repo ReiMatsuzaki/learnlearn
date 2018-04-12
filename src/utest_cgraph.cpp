@@ -9,8 +9,8 @@ int main () {
   int ni = 2;
   int no = 2;  
 
-  auto x = new Placeholder("x");
-  auto W = new VarMatrix(no, ni);
+  auto x = new Placeholder<1>("x");
+  auto W = new Variable<2>(no, ni);
   W->ref() << 0.1, 0.2, 0.3, 0.1;
   auto b = new VarVector(no);
   b->ref() << 0.1, 0.2;
