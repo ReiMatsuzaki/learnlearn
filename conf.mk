@@ -28,6 +28,9 @@ od2obj = $(addprefix ${BUILD}/, $(addsuffix .o, $(1)))
 ${BUILD}/%.x:
 	${CXX} ${CF} $^ -o $@
 ${BUILD}/%.o: ${SRC}/%.cpp
+	@if [ ! -d ${BUILD} ]; \
+	   then mkdir -p ${BUILD}; \
+	fi
 	cd ${BUILD}; ${CXX} ${CF} -c $< -o $@
 
 

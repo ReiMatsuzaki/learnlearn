@@ -6,22 +6,22 @@ using namespace Eigen;
 using namespace learnlearn;
 
 int main () {
+  int ni = 2;
+  int no = 2;  
 
   auto x = new Placeholder("x");
-  VectorXd yy(1); yy << 2.0;
-  auto y = new VarVector(yy);
-  auto z = new Add(x, y);
-  MatrixXd mm(1,1); mm << 4.0;
-  auto m = new VarMatrix(mm);
-  auto w = new Mul(m, z);
-  // w = (x+y) * x
+  auto W = new VarMatrix(no, ni);
+  W->ref() << 0.1, 0.2, 0.3, 0.1;
+  auto b = new VarVector(no);
+  b->ref() << 0.1, 0.2;
+  auto p = new Sigmoid(new Add(new Matmul(W,x), b));
 
   Replace rep;
-  VectorXd x0(1); x0<<3.0;
+  VectorXd x0(ni); x0<<3.0, 1.0;
   rep[x] = x0;
   
-  w->run(rep);
-  cout << "w->output: " << w->getvec() << endl;
-  //  cout << w->run(rep) << endl;
+  p->run(rep);
+  p->run(rep);
+  cout << "p->getvec: " << p->getvec() << endl;
   
 }

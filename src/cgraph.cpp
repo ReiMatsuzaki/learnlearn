@@ -61,7 +61,6 @@ namespace learnlearn {
     }
   }
 
-  Add::Add(VectorNode *a, VectorNode *b) : a_(a), b_(b), Operation(a,b) {}
   void Add::run(const Replace& rep) {
     //    for(auto it = input_nodes_.begin(); it != input_nodes_.end(); ++it) {
     //      (*it)->run(rep);
@@ -77,14 +76,12 @@ namespace learnlearn {
     buf += b_->to_string() + ")";
     return buf;
   }
-  Mul::Mul(VarMatrix *m, VectorNode *a) : m_(m), a_(a), Operation(m,a) {}
-  void Mul::run(const Replace& rep) {
+  void Matmul::run(const Replace& rep) {
     a_->run(rep);
     value_ = m_->mat_value_ * a_->getvec();
   }
-  string Mul::to_string() const { return "matmul"; }
+  string Matmul::to_string() const { return "matmul"; }
 
-  Tanh::Tanh(VectorNode *a): a_(a), Operation(a) {}
   void Tanh::run(const Replace& rep) {
     a_->run(rep);
     const VectorXd& x(a_->getvec());
@@ -93,4 +90,18 @@ namespace learnlearn {
     }
   }
   string Tanh::to_string() const { return "Tanh"; }
+  void Sigmoid::run(const Replace& rep) {
+    a_->run(rep);
+    const VectorXd& x(a_->getvec());
+    value_ = 1 / (1 + (-x).array().exp());
+  }
+  string Sigmoid::to_string() const { return "Sigmoid"; }
+  void Softmax::run(const Replace& rep) {
+    a_->run(rep);
+    const VectorXd& x(a_->getvec());
+    value_ = x.array().exp();
+    double sum = value_.sum();
+    value_ /= sum;
+  }
+  string Softmax::to_string() const { return "Softmax"; }
 }

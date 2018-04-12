@@ -38,8 +38,9 @@ namespace learnlearn {
   };
 
   class VectorNode : public Node {
-  protected:
-    Eigen::VectorXd value_;
+  protected:    
+    Eigen::VectorXd value_; // vector expressing a data.
+    VectorNode(int n) : value_(n) {}
   public:
     const Eigen::VectorXd& getvec() const;
   };
@@ -63,14 +64,18 @@ namespace learnlearn {
   };
   class VarVector : public VectorNode {
   public:
+    VarVector(int n) : VectorNode(n) {}
     VarVector(const Eigen::VectorXd& value);
     virtual std::string to_string() const;
+    Eigen::VectorXd& ref() { return value_; }
   };
   class VarMatrix : public Node {
   public:
     Eigen::MatrixXd mat_value_;
+    VarMatrix(int n, int m) : mat_value_(n,m) {}
     VarMatrix(const Eigen::MatrixXd& value);
     virtual std::string to_string() const;
+    Eigen::MatrixXd& ref() { return mat_value_; }
   };
 
   class Operation : public VectorNode {
@@ -87,16 +92,16 @@ namespace learnlearn {
   private:
     VectorNode *a_, *b_;
   public:
-    Add(VectorNode *a, VectorNode *b);
+    Add(VectorNode *a, VectorNode *b) : a_(a), b_(b), Operation(a,b) {}
     void run(const Replace& rep);    
     std::string to_string() const;
   };
-  class Mul : public Operation {
+  class Matmul : public Operation {
   private:
     VarMatrix *m_;
     VectorNode *a_;
   public:
-    Mul(VarMatrix *m, VectorNode *a);
+    Matmul(VarMatrix *m, VectorNode *a) : m_(m),a_(a),Operation(m,a) {}
     void run(const Replace& rep);    
     std::string to_string() const;
   };
@@ -105,57 +110,28 @@ namespace learnlearn {
   private:
     VectorNode *a_;
   public:
-    Tanh(VectorNode *a);
+    Tanh(VectorNode *a) : a_(a), Operation(a) {}
     void run(const Replace& rep);    
+    std::string to_string() const;
+  };
+  class Sigmoid : public Operation {
+  private:
+    VectorNode *a_;
+  public:
+    Sigmoid(VectorNode *a) : a_(a), Operation(a) {}
+    void run(const Replace& rep);
+    std::string to_string() const;
+  };
+  class Softmax : public Operation {
+  private:
+    VectorNode *a_;
+  public:
+    Softmax(VectorNode *a) : a_(a), Operation(a) {}
+    void run(const Replace& rep);
     std::string to_string() const;
   };
   
   std::ostream& operator<<(std::ostream& stream, const Node& vallue);
-  /*
-  class Mul : public Operation {
-  public:
-    Mul(Node* a, Node* b);
-    virtual void run(const Replace& rep);
-    virtual std::string to_string() const;
-  };
-  
-  */
-  //  std::ostream& operator<<(std::ostream& stream, const Graph& vallue);
-  //  std::ostream& operator<<(std::ostream& stream, const Operation& value);
-  //  std::ostream& operator<<(std::ostream& stream, const Add& vallue);
-  /*
-  class Node;
-  typedef std::list< std::shared_ptr<Node> > pNodes;
-  typedef std::shared_ptr<Node> pNode;
-  
-  class Node : public std::enable_shared_from_this<Node> {    
-  public:
-    pNodes input_nodes_;
-    pNodes consumers_;
-  public:
-    Node();
-    Node(const pNodes& input_nodes);
-  protected:
-    void init(const pNodes& input_nodes);
-  };  
-
-  class Placeholder : public Node {
-    std::string name_;
-  public:
-    Placeholder(std::string name);
-  };
-  
-  class Operation : public Node {
-  public:
-    double compute();
-  };
-  
-  class Add : public Operation {
-  public:
-    Add(pNode a, pNode b);
-    double compute();
-  };
-  */
 }
 
 #endif
