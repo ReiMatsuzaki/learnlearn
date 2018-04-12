@@ -59,6 +59,7 @@ namespace learnlearn {
     const Eigen::MatrixXd& value() const { return value_; }
   };
 
+  /*
   class VectorNode : public Node {
   protected:    
     Eigen::VectorXd value_; // value_[]
@@ -67,8 +68,9 @@ namespace learnlearn {
   public:
     const Eigen::VectorXd& getvec() const;
   };
+  */
   
-  class Placeholder : public VectorNode {
+  template<int N> class Placeholder : public TNode<N> {
   private:
     std::string name_;    
   public:    
@@ -77,6 +79,8 @@ namespace learnlearn {
     virtual std::string to_string() const;
   };
 
+  template<int N> class Variable : public TNode<N> {};
+  /*
   class VarScalar : public Node {
   private:
     double val_scalar_;
@@ -100,8 +104,9 @@ namespace learnlearn {
     virtual std::string to_string() const;
     Eigen::MatrixXd& ref() { return mat_value_; }
   };
+  */
 
-  class Operation : public VectorNode {
+  template<int N> class Operation : public TNode<N> {
   protected:
     std::list<Node*> input_nodes_;    
   public:
@@ -111,25 +116,24 @@ namespace learnlearn {
     Operation(const std::list<Node*>& input_nodes);
     void init(const std::list<Node*>& input_nodes);
   };
-  class Add : public Operation {
+  template<int N> class Add : public Operation<N> {
   private:
-    VectorNode *a_, *b_;
+    TNode<N> *a_, *b_;
   public:
-    Add(VectorNode *a, VectorNode *b) : a_(a), b_(b), Operation(a,b) {}
+    Add(TNode<N> *a, TNode<N> *b) : a_(a), b_(b), Operation(a,b) {}
     void run(const Replace& rep);    
     std::string to_string() const;
   };
-  class Matmul : public Operation {
+  class Matmul : public TNode<1> {
   private:
-    VarMatrix *m_;
-    VectorNode *a_;
+    TNode<2> *m_;
+    TNode<1> *a_;
   public:
-    Matmul(VarMatrix *m, VectorNode *a) : m_(m),a_(a),Operation(m,a) {}
+    Matmul(TNode<2> *m, TNode<1> *a) : m_(m),a_(a),Operation(m,a) {}
     void run(const Replace& rep);    
     std::string to_string() const;
   };
-
-  class Tanh : public Operation {
+  template<int N> class Tanh     : public TNode<N> {
   private:
     VectorNode *a_;
   public:
@@ -137,7 +141,7 @@ namespace learnlearn {
     void run(const Replace& rep);    
     std::string to_string() const  { return "Tanh"; }
   };
-  class Sigmoid : public Operation {
+  template<int N> class Sigmoid  : public TNode<N> {
   private:
     VectorNode *a_;
   public:
@@ -145,7 +149,7 @@ namespace learnlearn {
     void run(const Replace& rep);
     std::string to_string() const { return "Sigmoid"; }
   };
-  class Softmax : public Operation {
+  template<int N> class Softmax  : public TNode<N> {
   private:
     VectorNode *a_;
   public:
@@ -153,7 +157,7 @@ namespace learnlearn {
     void run(const Replace& rep);
     std::string to_string() const  { return "Softmax"; }
   };
-  class Log : public Operation {
+  template<int N> class Log      : public TNode<N> {
   private:
     VectorNode *a_;
   public:
@@ -161,7 +165,7 @@ namespace learnlearn {
     void run(const Replace& rep);
     std::string to_string() const  { return "Log"; }
   };
-  class Multiply : public Operation {
+  template<int N> class Multiply : public TNode<N> {
   private:
     VectorNode *a_, *b_;
   public:
@@ -169,7 +173,7 @@ namespace learnlearn {
     void run(const Replace& rep);
     std::string to_string() const  { return "Multiply"; }
   };
-  class Negative : public Operation {
+  template<int N> class Negative : public TNode<N> {
     private:
     VectorNode *a_;
   public:
@@ -182,3 +186,5 @@ namespace learnlearn {
 }
 
 #endif
+
+
