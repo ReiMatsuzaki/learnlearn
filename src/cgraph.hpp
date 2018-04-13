@@ -15,7 +15,7 @@ namespace learnlearn {
   //  class Variable;
   //  class Placeholder;
 
-  typedef std::map<Node*,Eigen::VectorXd> Replace;
+  typedef std::map<Node*,Eigen::MatrixXd> Replace;
 
   class Graph {
   public:
@@ -29,7 +29,6 @@ namespace learnlearn {
     }
     //    std::string str() const;
   };  
-
 
   template<int N> class TypeTensor {
   public:
@@ -118,22 +117,31 @@ namespace learnlearn {
   public:
     Add(TNode<NL> *a, TNode<NR> *b) : a_(a), b_(b), Operation<N>(a,b) {}
     void run(const Replace& rep) {
-      for(auto it = this->input_nodes_.begin(); it != this->input_nodes_.end(); ++it) {
+      for(auto it = this->input_nodes_.begin();
+	  it != this->input_nodes_.end(); ++it) {
 	(*it)->run(rep);
       }
-      //      a_->run(rep);
-      //      b_->run(rep);
-      this->output_ = this->a_->output() + this->b_->output();
+      if(N==NL && N==NR) {
+	this->output_ = this->a_->output() + this->b_->output();
+      } else if(N==2 && NL==2 && NR==1) {
+	this->output_ = this->a_->output();
+	for(int i = 0; i < this->a_->output().rows(); i++) {
+	  for(int j = 0; j < this->a_->output().cols(); j++) {    
+	    this->output_(i,j) = this->a_->output()(i,j) + this->b_->output()(j);
+	  }
+	}
+      }
     }
     std::string to_string() const { return "Add"; }
   };
-  class Matmul : public Operation<1> {
+  template<int N> class Matmul   : public Operation<N> {
   private:
     TNode<2> *m_;
-    TNode<1> *a_;
+    TNode<N> *a_;
   public:
-    Matmul(TNode<2> *m, TNode<1> *a) : m_(m),a_(a),Operation<1>(m,a) {}
+    Matmul(TNode<2> *m, TNode<N> *a) : m_(m),a_(a),Operation<N>(m,a) {}
     void run(const Replace& rep) {
+      m_->run(rep);
       a_->run(rep);
       this->output_ = m_->output() * a_->output();
     }
