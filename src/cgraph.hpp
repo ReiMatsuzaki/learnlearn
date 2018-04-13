@@ -108,7 +108,13 @@ namespace learnlearn {
       for(auto it = input_nodes_.begin(); it != input_nodes_.end(); ++it) {
 	(*it)->consumers_.push_back(this);
       }
-    }    
+    }
+    virtual void run(const Replace& rep) {
+      for(auto it = this->input_nodes_.begin();
+	  it != this->input_nodes_.end(); ++it) {
+	(*it)->run(rep);
+      }
+    }
   };
   template<int N, int NL, int NR> class Add : public Operation<N> {
   private:
@@ -117,10 +123,7 @@ namespace learnlearn {
   public:
     Add(TNode<NL> *a, TNode<NR> *b) : a_(a), b_(b), Operation<N>(a,b) {}
     void run(const Replace& rep) {
-      for(auto it = this->input_nodes_.begin();
-	  it != this->input_nodes_.end(); ++it) {
-	(*it)->run(rep);
-      }
+      Operation<N>::run(rep);
       if(N==NL && N==NR) {
 	this->output_ = this->a_->output() + this->b_->output();
       } else if(N==2 && NL==2 && NR==1) {
@@ -141,8 +144,7 @@ namespace learnlearn {
   public:
     Matmul(TNode<2> *m, TNode<N> *a) : m_(m),a_(a),Operation<N>(m,a) {}
     void run(const Replace& rep) {
-      m_->run(rep);
-      a_->run(rep);
+      Operation<N>::run(rep);
       this->output_ = m_->output() * a_->output();
     }
     std::string to_string() const { return "Matmul"; }
@@ -152,7 +154,9 @@ namespace learnlearn {
     TNode<N> *a_;
   public:
     Tanh(TNode<N> *a) : a_(a), Operation<N>(a) {}
-    void run(const Replace& rep);    
+    void run(const Replace& rep) {
+      Operation<N>::run(rep);
+    }
     std::string to_string() const  { return "Tanh"; }
   };
   template<int N> class Sigmoid  : public Operation<N> {
@@ -161,18 +165,18 @@ namespace learnlearn {
   public:
     Sigmoid(TNode<N> *a) : a_(a), Operation<N>(a) {}
     void run(const Replace& rep) {
-      a_->run(rep);
-      this->output_ = 1 / (1 + (-a_->output().array().exp()));
+      Operation<N>::run(rep);
+      this->output_ = 1 / (1 + ((-a_->output()).array().exp()));
     }
     std::string to_string() const { return "Sigmoid"; }
   };
-  template<int N> class Softmax  : public TNode<N> {
+  template<int N> class Softmax  : public Operation<N> {
   private:
     TNode<N> *a_;
   public:
     Softmax(TNode<N> *a) : a_(a), Operation<N>(a) {}
     void run(const Replace& rep) {
-      a_->run(rep);
+      Operation<N>::run(rep);
       const typename TypeTensor<N>::Value& x(a_->value());
       this->value_ = x.array().exp();
       double sum = this->value_.sum();
@@ -180,20 +184,26 @@ namespace learnlearn {
     }
     std::string to_string() const  { return "Softmax"; }
   };
-  template<int N> class Log      : public TNode<N> {
+  template<int N> class Log      : public Operation<N> {
   private:
     TNode<N> *a_;
   public:
     Log(TNode<N> *a) : a_(a), Operation<N>(a) {}
-    void run(const Replace& rep);
+    void run(const Replace& rep) {
+      Operation<N>::run(rep);
+      this->output_ = a_->output().array().log();
+    }
     std::string to_string() const  { return "Log"; }
   };
-  template<int N> class Multiply : public TNode<N> {
+  template<int N> class Multiply : public Operation<N> {
   private:
     TNode<N> *a_, *b_;
   public:
     Multiply(TNode<N> *a, TNode<N> *b) : a_(a), b_(b), Operation<N>(a,b) {}
-    void run(const Replace& rep);
+    void run(const Replace& rep) {
+      Operation<N>::run(rep);
+      this->output_ = a_->output().array() * b_->output().array();
+    }
     std::string to_string() const  { return "Multiply"; }
   };
   template<int N> class Negative : public TNode<N> {
@@ -204,7 +214,17 @@ namespace learnlearn {
     void run(const Replace& rep);
     std::string to_string() const { return "Negative"; }
   };
-  
+  template<int N> class Sum : public Operation<0> {
+  private:
+    TNode<N> *a_;
+  public:
+    Sum(TNode<N> *a) : a_(a), Operation<0>(a) {}
+    void run(const Replace& rep) {
+      Operation<0>::run(rep);
+      this->output_ = a_->output().sum();
+    }
+    std::string to_string() const { return "sum"; }
+  };
   std::ostream& operator<<(std::ostream& stream, const Node& vallue);
 }
 

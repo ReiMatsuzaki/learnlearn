@@ -28,8 +28,28 @@ int main () {
   auto xw_b = new Add<2,2,1>(xw, b);
 
   auto p = new Sigmoid<2>(xw_b);
-  p->run(rep);
-  cout << "p->output: " << endl;
+  auto logp = new Log<2>(p);
+
+  auto C = new Variable<2>();
+  auto CC = MatrixXd(nd, no);
+  CC << 0.1, 0.2, 0.3, 0.1, 0.2, 0.3;
+  C->ref() = CC;
+
+  auto C_logp = new Multiply<2>(C, logp);  
+
+    
+  auto j = new Sum<2>(C_logp);
+  
+  logp->run(rep);
+  cout << "p" << endl;
   cout << p->output() << endl;
+  cout << "logp->output: " << endl;
+  cout << logp->output() << endl;
+  cout << "logp->output: " << endl;
+  C_logp->run(rep);
+  cout << C_logp->output() << endl;
+  cout << "j->output: " << endl;
+  j->run(rep);
+  cout << j->output() << endl;
 
 }

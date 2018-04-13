@@ -27,7 +27,7 @@ od2obj = $(addprefix ${BUILD}/, $(addsuffix .o, $(1)))
 # -- compile --
 ${BUILD}/%.x:
 	${CXX} ${CF} $^ -o $@
-${BUILD}/%.o: ${SRC}/%.cpp
+${BUILD}/%.o: ${SRC}/%.cpp 
 	@if [ ! -d ${BUILD} ]; \
 	   then mkdir -p ${BUILD}; \
 	fi

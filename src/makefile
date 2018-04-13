@@ -1,5 +1,7 @@
 include ../conf.mk
 
+${BUILD}/utest_cgraph.o: ${SRC}/utest_cgraph.cpp ${SRC}/cgraph.hpp
+
 OBJS=$(addprefix ${BUILD}/, $(addsuffix .o, utest_cgraph))
 ${BUILD}/utest_cgraph.x: ${OBJS}
 check: ${BUILD}/utest_cgraph.x
