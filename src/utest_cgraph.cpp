@@ -1,11 +1,24 @@
 #include <iostream>
-#include "cgraph.hpp"
+
 #include <Eigen>
+#include <gtest/gtest.h>
+
+#include "cgraph.hpp"
+
 using namespace std;
 using namespace Eigen;
 using namespace learnlearn;
 
-int main () {
+namespace {
+  
+  class UTestCGraph : public ::testing::Test{};
+  
+  TEST_F(UTestCGraph, test_placeholder) {
+    auto X = new Placeholder<2>("x"); // batch data
+  }
+}
+
+int sub () {
   int nd = 3;
   int ni = 2;
   int no = 2;  
@@ -52,4 +65,5 @@ int main () {
   j->run(rep);
   cout << j->output() << endl;
 
+  return 0;
 }
